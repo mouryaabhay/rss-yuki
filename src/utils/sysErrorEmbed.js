@@ -4,7 +4,6 @@ import { getErrorLogChannel } from "./logChannelUtils.js";
 
 const { EMBED_COLORS } = config;
 
-// Function to send an error message
 export async function sendSysErrorMessage(filePath, customMessage) {
   const channel = getErrorLogChannel();
 

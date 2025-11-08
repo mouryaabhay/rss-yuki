@@ -8,7 +8,7 @@ import {
 import config from "../configs/config.js";
 const { EMBED_COLORS } = config;
 const { RSS_FEED } = config;
-import { getOpenGraphImage } from "../utils/rssUtils/functions/getOpenGraphImage.js";
+import { getArticleImage } from "../utils/rssUtils/functions/getArticleImage.js";
 import { sendEmbedWithImage } from "../utils/rssUtils/functions/sendEmbedWithImage.js";
 import { loadTimestamps, saveTimestamps } from "../utils/rssUtils/logging/rssFeedTimestampsLogger.js";
 import { sendSysErrorMessage } from "../utils/sysErrorEmbed.js";
@@ -39,7 +39,7 @@ class rssFeedService {
 
     const enabledUrls = rssUrls.filter((feed) => feed.enabled);
 
-    for (const { articleType, url } of enabledUrls) {
+    for (const { articleType, url, color } of enabledUrls) {
       if (!url) continue;
 
       try {
@@ -49,7 +49,7 @@ class rssFeedService {
         const newFeedItems = this.filterNewFeedItems(feed.items, lastSentTimestamp);
 
         for (const item of newFeedItems) {
-          await this.processAndSendFeedItem(channel, item, url, articleType);
+          await this.processAndSendFeedItem(channel, item, url, articleType, color);
           anyNewFeedSent = true;
         }
 
@@ -75,15 +75,15 @@ class rssFeedService {
       .slice(0, RSS_FEED.MAX_FEED_COUNT);
   }
 
-  async processAndSendFeedItem(channel, item, url, articleType) {
+  async processAndSendFeedItem(channel, item, url, articleType, color) {
     try {
-      const ogImage = await getOpenGraphImage(item.link);
+      const ogImage = await getArticleImage(item.link);
 
       const embed = new EmbedBuilder()
-        .setColor(EMBED_COLORS.PRIMARY)
+        .setColor(color)
         .setTitle(item.title)
         .setURL(item.link)
-        .setDescription(`> ${item.contentSnippet}` || "> No description available.")
+        .setDescription(item.contentSnippet ? `> ${item.contentSnippet}` : "> No description available.")
         .addFields(
           {
             name: "Article Type",
@@ -100,6 +100,7 @@ class rssFeedService {
         )
         .setTimestamp(new Date(item.pubDate));
 
+      // Optional button
       const button = new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel("Read Article")
@@ -108,22 +109,20 @@ class rssFeedService {
       const actionRow = new ActionRowBuilder().addComponents(button);
 
       if (ogImage) {
-        // Use helper to download, attach, and delete image
         await sendEmbedWithImage(channel, embed, ogImage, actionRow);
       } else {
-        await channel.send({ embeds: [embed], components: [actionRow] });
+        // Even without image, we can include components
+        await sendEmbedWithImage(channel, embed, null, actionRow);
       }
 
       this.feedTimestamps.set(url, item.pubDate);
       console.info(`[INFO] New ${articleType} feed sent: ${item.title}`);
     } catch (error) {
       console.error(`[ERROR] Failed to process feed item: ${item.link}`, error);
-      sendSysErrorMessage(
-        __filename,
-        `- Failed to process feed item: ${item.link}`
-      );
+      sendSysErrorMessage(__filename, `- Failed to process feed item: ${item.link}`);
     }
   }
+
 
   logFeedFetchStatus(newFeedItems, articleType) {
     if (newFeedItems.length === 0) {

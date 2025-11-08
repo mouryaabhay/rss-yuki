@@ -31,7 +31,7 @@ export default {
         return `> **</${cmd.name}:${cmdId}>**\n- ${cmd.description || "No description available"}`;
       });
 
-      const descriptionText = `**Message from the dev:**\nThis bot was created by @mouryaabhay on GitHub to fetch RSS feeds from Anime News Network directly into your Discord server.\nThe source code is open-sourced under the MIT License. Please note that it was developed early in my programming journey, so the code may not follow best practices.\n\nThis bot is intended for private, non-commercial use. Contributions to improve the code are always welcome!\n\n**Commands:**\n${commandDescriptions.join("\n")}`.slice(0, 4096);
+      const descriptionText = `**Message from [@mouryaabhay](https://github.com/mouryaabhay/):**\nThis bot was created to fetch RSS feeds from Anime News Network and directly send a formated messge into your Discord server.\nThe source code is open-sourced under the MIT License. Please note that it was developed early in my programming journey, so the code may not follow best practices.\n\nThis bot is intended for private, non-commercial use. Contributions to improve the code are always welcome!\n\n**Commands:**\n${commandDescriptions.join("\n")}`.slice(0, 4096);
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLORS.PRIMARY)
@@ -54,7 +54,7 @@ export default {
 
       const actionRow = new ActionRowBuilder().addComponents(githubButton, discordButton);
 
-      const replyData = { embeds: [embed], components: [actionRow], ephemeral: true };
+      const replyData = { embeds: [embed], components: [actionRow]};
 
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(replyData);
@@ -74,7 +74,7 @@ export default {
         } else {
           await interaction.reply({ content: "There was an error retrieving the command list.", ephemeral: true });
         }
-      } catch {}
+      } catch { }
     }
   },
 };
