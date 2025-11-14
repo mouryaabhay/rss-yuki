@@ -1,4 +1,4 @@
-# Aven - The Revival of Chat
+# RSS Yuki
 
 A Discord bot built by @mouryaabhay to fetch RSS feeds from Anime News Network directly into your server. The bot is open-source under the MIT License and is intended for private, non-commercial use.
 
